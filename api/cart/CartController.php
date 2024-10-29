@@ -52,8 +52,6 @@ class CartController {
         return $cart;
     }
     
-    
-
     public function addItemToCart($user_id, $product_id, $quantity) {
         $stmt = $this->conn->prepare("SELECT cart_id FROM carts WHERE user_id = ?");
         $stmt->execute([$user_id]);
@@ -96,7 +94,42 @@ class CartController {
             return ["message" => "Product not found in the cart or quantity is the same."];
         }
     }
-    
 
-}
+    public function removeItemFromCart($user_id, $product_id) {
+        $stmt = $this->conn->prepare("SELECT cart_id FROM carts WHERE user_id = ?");
+        $stmt->execute([$user_id]);
+        $cart = $stmt->fetch(PDO::FETCH_ASSOC);
+        $cart_id = $cart ? $cart["cart_id"] : null;
+    
+        if (!$cart_id) {
+            return ["message" => "Cart not found for user."];
+        }
+    
+        $stmt = $this->conn->prepare("DELETE FROM cart_items WHERE cart_id = ? AND product_id = ?");
+        $stmt->execute([$cart_id, $product_id]);
+
+        if ($stmt->rowCount() > 0) {
+            return ["message" => "Updated cart summary or success message."];
+        } else {
+            return ["message" => "Product not found in the cart."];
+        }
+    }
+
+    public function clearCart($user_id) {
+        $stmt = $this->conn->prepare("SELECT cart_id FROM carts WHERE user_id = ?");
+        $stmt->execute([$user_id]);
+        $cart = $stmt->fetch(PDO::FETCH_ASSOC);
+        $cart_id = $cart ? $cart["cart_id"] : null;
+    
+        if (!$cart_id) {
+            return ["message" => "Cart not found for user."];
+        }
+    
+        $stmt = $this->conn->prepare("DELETE FROM cart_items WHERE cart_id = ?");
+        $stmt->execute([$cart_id]);
+    
+        return ["message" => "Cart cleared successfully."];
+    }
+    
+}    
 ?>

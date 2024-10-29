@@ -21,13 +21,6 @@ $routes = [
             }
         }
     },
-    '/api/checkout/initiate' => function() use ($checkoutController, $method, $data) {
-        if ($method === 'POST') {
-            $user_id = $data['user_id'];
-            $shipping_address = $data['shipping_address'];
-            return $checkoutController->initiateCheckout($user_id, $shipping_address);
-        }
-    },
     '/api/cart_items' => function() use ($cartController, $method, $data) {
         if ($method === 'POST') {
             $user_id = $data['user_id'];
@@ -50,6 +43,30 @@ $routes = [
             }
         }
     },
+    '/api/cart/items/{product_id}' => function($params) use ($cartController, $method, $data) {
+        if ($method === 'DELETE') {
+            $product_id = $params['product_id'];
+            $user_id = $data['user_id'];
+
+            if ($user_id) {
+                return $cartController->removeItemFromCart($user_id, $product_id);
+            } else {
+                http_response_code(400);
+                return ["message" => "user_id is required"];
+            }
+        }
+    },
+    '/api/cart/delete' => function() use ($cartController, $method) {
+        if ($method === 'DELETE') {
+            $user_id = $_GET['user_id'] ?? null; 
+            if ($user_id) {
+                return $cartController->clearCart($user_id);
+            } else {
+                http_response_code(400);
+                return ["message" => "user_id is required"];
+            }
+        }
+    }
 ];
 
 
